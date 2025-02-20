@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>תרגול מתמטיקה</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; direction: rtl; }
+        body { font-family: Arial, sans-serif; text-align: center; direction: ltr; }
         .exercise { margin: 10px; font-size: 24px; }
         .result { font-size: 24px; margin-left: 10px; }
         .correct { color: green; }
@@ -23,6 +23,10 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
+        function formatNumber(num) {
+            return num < 0 ? `(${num})` : num;
+        }
+
         function generateExercises() {
             const container = document.getElementById("exercises");
             container.innerHTML = "";
@@ -31,8 +35,8 @@
                 let num2 = getRandomInt(-10, 10);
                 let operators = ['+', '-', '*', '/'];
                 let operator = operators[getRandomInt(0, operators.length - 1)];
-                let question = `${num1} ${operator} ${num2}`;
-                let correctAnswer = eval(question);
+                let question = `${formatNumber(num1)} ${operator} ${formatNumber(num2)}`;
+                let correctAnswer = eval(question.replace(/[()]/g, ""));
                 
                 let div = document.createElement("div");
                 div.className = "exercise";

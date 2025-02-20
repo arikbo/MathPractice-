@@ -1,55 +1,66 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>תרגול מספרים מכוונים</title>
+    <title>תרגול מתמטיקה</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; direction: rtl; }
-        .question { font-size: 20px; margin: 10px; }
-        input { font-size: 18px; width: 60px; text-align: center; }
-        button { font-size: 18px; margin-top: 10px; }
-        .result { font-size: 22px; font-weight: bold; margin-top: 10px; }
+        .exercise { margin: 10px; font-size: 24px; }
+        .result { font-size: 24px; margin-left: 10px; }
+        .correct { color: green; }
+        .incorrect { color: red; }
+        .btn { margin-top: 20px; padding: 10px; font-size: 18px; }
     </style>
 </head>
 <body>
     <h1>תרגול מספרים מכוונים</h1>
-    <div id="quiz"></div>
-    <button onclick="checkAnswers()">בדוק תשובות</button>
-    <div id="score" class="result"></div>
+    <div id="exercises"></div>
+    <button class="btn" onclick="generateExercises()">ניסיון חדש</button>
 
     <script>
-        const questions = [
-            { q: "-3 + 7", a: 4 },
-            { q: "5 - (-2)", a: 7 },
-            { q: "-6 × 3", a: -18 },
-            { q: "-12 ÷ (-4)", a: 3 },
-            { q: "-7 + (-5)", a: -12 }
-        ];
-        
-        function loadQuiz() {
-            const quizDiv = document.getElementById("quiz");
-            quizDiv.innerHTML = "";
-            questions.forEach((question, index) => {
-                quizDiv.innerHTML += `
-                    <div class="question">${index + 1}. ${question.q} = 
-                        <input type="number" id="answer${index}">
-                    </div>`;
-            });
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function checkAnswers() {
-            let score = 0;
-            questions.forEach((question, index) => {
-                const userAnswer = document.getElementById(`answer${index}`).value;
-                if (parseInt(userAnswer) === question.a) {
-                    score++;
-                }
-            });
-            document.getElementById("score").innerText = `ניקוד: ${score} מתוך ${questions.length}`;
+        function generateExercises() {
+            const container = document.getElementById("exercises");
+            container.innerHTML = "";
+            for (let i = 0; i < 10; i++) {
+                let num1 = getRandomInt(-10, 10);
+                let num2 = getRandomInt(-10, 10);
+                let operators = ['+', '-', '*', '/'];
+                let operator = operators[getRandomInt(0, operators.length - 1)];
+                let question = `${num1} ${operator} ${num2}`;
+                let correctAnswer = eval(question);
+                
+                let div = document.createElement("div");
+                div.className = "exercise";
+                div.innerHTML = `
+                    <span>${question} = </span>
+                    <input type="number" oninput="checkAnswer(this, ${correctAnswer})">
+                    <span class="result"></span>
+                `;
+                container.appendChild(div);
+            }
         }
 
-        loadQuiz();
+        function checkAnswer(input, correctAnswer) {
+            let resultSpan = input.nextElementSibling;
+            if (input.value === "") {
+                resultSpan.innerHTML = "";
+                return;
+            }
+            if (parseFloat(input.value) === correctAnswer) {
+                resultSpan.innerHTML = "✔";
+                resultSpan.className = "result correct";
+            } else {
+                resultSpan.innerHTML = "✖";
+                resultSpan.className = "result incorrect";
+            }
+        }
+
+        generateExercises();
     </script>
 </body>
 </html>

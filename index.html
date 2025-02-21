@@ -1,85 +1,26 @@
+
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>תרגול מספרים מכוונים</title>
-    <script async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f8f9fa;
-            color: #333;
-            padding: 20px;
-        }
-        .exercise-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-        .exercise {
-            font-size: 24px;
-            background: white;
-            padding: 15px;
-            width: 80%;
-            max-width: 400px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-        input {
-            font-size: 20px;
-            width: 80px;
-            padding: 5px;
-            text-align: center;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-        }
-        .correct {
-            color: green;
-            font-weight: bold;
-        }
-        .incorrect {
-            color: red;
-            font-weight: bold;
-        }
-        .result {
-            font-size: 22px;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-        .button {
-            padding: 12px 25px;
-            font-size: 18px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 20px;
-        }
-        .button:hover {
-            background: #0056b3;
-        }
-        footer {
-            margin-top: 30px;
-            color: gray;
-            font-size: 14px;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; direction: ltr; }
+        .exercise { font-size: 24px; margin: 10px; }
+        input { font-size: 20px; width: 80px; text-align: center; }
+        .correct { color: green; font-weight: bold; }
+        .incorrect { color: red; font-weight: bold; }
+        .result { font-size: 20px; margin-top: 20px; }
+        .new-try { font-size: 18px; padding: 10px; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
     <h1>תרגול מספרים מכוונים</h1>
-    <div class="exercise-container" id="exercises"></div>
-    <button class="button" onclick="generateExercises()">ניסיון חדש</button>
-    <p id="score" class="result"></p>
+    <div id="exercises"></div>
+    <button class="new-try" onclick="generateExercises()">ניסיון חדש</button>
+    <div id="score" class="result"></div>
     <footer>האתר נבנה על ידי אריק בוריסי ©️</footer>
 
     <script>
@@ -87,74 +28,58 @@
             const operators = ['+', '-', '*', '/'];
             const exercisesDiv = document.getElementById('exercises');
             exercisesDiv.innerHTML = '';
-            let total = 10;
-            let correctCount = 0;
-
-            for (let i = 0; i < total; i++) {
+            window.correctAnswers = 0;
+            window.totalQuestions = 10;
+            
+            for (let i = 0; i < 10; i++) {
                 let num1 = Math.floor(Math.random() * 21) - 10;
                 let num2 = Math.floor(Math.random() * 21) - 10;
-                let operator = operators[Math.floor(Math.random() * operators.length)];
-
-                if (operator === '/' && num2 === 0) num2 = 1;
-
-                let formattedNum1 = formatNumber(num1);
-                let formattedNum2 = formatNumber(num2);
-
-                let question = `${formattedNum1} ${operator} ${formattedNum2}`;
-                let solution = eval(question.replace('÷', '/').replace('×', '*'));
-
+                let op = operators[Math.floor(Math.random() * operators.length)];
+                
+                if (op === '/' && num2 === 0) num2 = 1; 
+                
+                let expression = `${formatNumber(num1)} ${op} ${formatNumber(num2)}`;
+                let solution = eval(expression.replace('−', '-'));
+                
                 let div = document.createElement('div');
                 div.className = 'exercise';
                 div.innerHTML = `
-                    <span class="mathjax"> \$begin:math:text$${formattedNum1} ${operator} ${formattedNum2} =\\$end:math:text$ </span>
-                    <input type="number" data-answer="${solution}" oninput="checkAnswer(this)">
-                    <span class="result-indicator"></span>
+                    \(${expression}\) = <input type="text" oninput="checkAnswer(this, ${solution})">
+                    <span class="feedback"></span>
                 `;
                 exercisesDiv.appendChild(div);
             }
-            MathJax.typesetPromise();
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
         }
 
         function formatNumber(num) {
             return num < 0 ? `(${num})` : num;
         }
-
-        function checkAnswer(input) {
-            let userAnswer = parseFloat(input.value);
-            let correctAnswer = parseFloat(input.dataset.answer);
-            let resultIndicator = input.nextElementSibling;
-
-            if (!isNaN(userAnswer)) {
-                if (userAnswer === correctAnswer) {
-                    resultIndicator.innerHTML = '✔️';
-                    resultIndicator.className = 'correct';
+        
+        function checkAnswer(input, correctAnswer) {
+            let feedback = input.nextElementSibling;
+            if (input.value.trim() !== "") {
+                if (parseFloat(input.value) === correctAnswer) {
+                    feedback.innerHTML = '✔';
+                    feedback.className = 'correct';
+                    window.correctAnswers++;
                 } else {
-                    resultIndicator.innerHTML = '❌';
-                    resultIndicator.className = 'incorrect';
+                    feedback.innerHTML = '✖';
+                    feedback.className = 'incorrect';
                 }
-                calculateScore();
+                updateScore();
             } else {
-                resultIndicator.innerHTML = '';
+                feedback.innerHTML = '';
             }
         }
-
-        function calculateScore() {
-            let inputs = document.querySelectorAll('input');
-            let correct = 0;
-            let total = inputs.length;
-
-            inputs.forEach(input => {
-                if (input.nextElementSibling.innerHTML === '✔️') {
-                    correct++;
-                }
-            });
-
-            let percentage = Math.round((correct / total) * 100);
-            document.getElementById('score').innerText = `תוצאה: ${correct} מתוך ${total} ( ${percentage}% )`;
-            document.getElementById('score').style.color = correct === total ? 'green' : 'red';
+        
+        function updateScore() {
+            let scoreDiv = document.getElementById('score');
+            let percentage = (window.correctAnswers / window.totalQuestions) * 100;
+            scoreDiv.innerHTML = `נכונות: ${window.correctAnswers} מתוך ${window.totalQuestions} (ציון: ${percentage.toFixed(1)}%)`;
         }
-
-        generateExercises();
+        
+        window.onload = generateExercises;
     </script>
 </body>
 </html>

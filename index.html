@@ -1,150 +1,84 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>תרגול מספרים מכוונים</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
     <style>
-        body {
-            font-family: 'Rubik', sans-serif;
-            text-align: left;
-            direction: ltr;
-            background-color: #f8f9fa;
-            color: #333;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 1s ease-in;
-        }
-        h1 {
-            text-align: center;
-        }
-        .exercise {
-            font-size: 20px;
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        input {
-            width: 80px;
-            padding: 5px;
-            font-size: 18px;
-            text-align: center;
-        }
-        .result {
-            font-size: 24px;
-            margin-left: 10px;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            font-size: 18px;
-            margin-top: 20px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background: #007bff;
-            color: white;
-            transition: background 0.3s ease;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        #score {
-            text-align: center;
-            font-size: 22px;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-        .history {
-            margin-top: 20px;
-            font-size: 16px;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        body { font-family: Arial, sans-serif; text-align: center; direction: ltr; }
+        .exercise { font-size: 24px; margin: 10px; }
+        input { font-size: 20px; width: 80px; text-align: center; }
+        .correct { color: green; font-weight: bold; }
+        .incorrect { color: red; font-weight: bold; }
+        .result { font-size: 20px; margin-top: 20px; }
+        .new-try { font-size: 18px; padding: 10px; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>תרגול מספרים מכוונים</h1>
-        <div id="exercises"></div>
-        <button onclick="checkAnswers()">בדוק תשובות</button>
-        <button onclick="generateExercises()">ניסיון חדש</button>
-        <div id="score"></div>
-        <div class="history">
-            <h3>היסטוריית תרגולים:</h3>
-            <ul id="history-list"></ul>
-        </div>
-    </div>
-    <footer style="text-align: center; margin-top: 20px; font-size: 14px;">
-        האתר נבנה על ידי אריק בוריסי ©️
-    </footer>
+    <h1>תרגול מספרים מכוונים</h1>
+    <div id="exercises"></div>
+    <button class="new-try" onclick="generateExercises()">ניסיון חדש</button>
+    <div id="score" class="result"></div>
+    <footer>האתר נבנה על ידי אריק בוריסי ©️</footer>
+
     <script>
-        let history = [];
-        
         function generateExercises() {
             const operators = ['+', '-', '*', '/'];
-            const exercisesContainer = document.getElementById("exercises");
-            exercisesContainer.innerHTML = "";
+            const exercisesDiv = document.getElementById('exercises');
+            exercisesDiv.innerHTML = '';
+            window.correctAnswers = 0;
+            window.totalQuestions = 10;
+            
             for (let i = 0; i < 10; i++) {
-                let num1 = Math.floor(Math.random() * 20) - 10;
-                let num2 = Math.floor(Math.random() * 20) - 10;
-                let operator = operators[Math.floor(Math.random() * operators.length)];
-                let expression = `${num1 < 0 ? `(${num1})` : num1} ${operator} ${num2 < 0 ? `(${num2})` : num2}`;
-                exercisesContainer.innerHTML += `
-                    <div class="exercise">
-                        \(${expression} = \)
-                        <input type="text" data-answer="${eval(expression)}">
-                        <span class="result"></span>
-                    </div>`;
+                let num1 = Math.floor(Math.random() * 21) - 10;
+                let num2 = Math.floor(Math.random() * 21) - 10;
+                let op = operators[Math.floor(Math.random() * operators.length)];
+                
+                if (op === '/' && num2 === 0) num2 = 1; 
+                
+                let expression = `${formatNumber(num1)} ${op} ${formatNumber(num2)}`;
+                let solution = eval(expression.replace('−', '-'));
+                
+                let div = document.createElement('div');
+                div.className = 'exercise';
+                div.innerHTML = `
+                    \(${expression}\) = <input type="text" oninput="checkAnswer(this, ${solution})">
+                    <span class="feedback"></span>
+                `;
+                exercisesDiv.appendChild(div);
             }
-            MathJax.typeset();
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function formatNumber(num) {
+            return num < 0 ? `(${num})` : num;
         }
         
-        function checkAnswers() {
-            let correct = 0;
-            const inputs = document.querySelectorAll("input");
-            inputs.forEach(input => {
-                const resultSpan = input.nextElementSibling;
-                if (parseFloat(input.value) === parseFloat(input.dataset.answer)) {
-                    resultSpan.textContent = "✔️";
-                    resultSpan.style.color = "green";
-                    correct++;
+        function checkAnswer(input, correctAnswer) {
+            let feedback = input.nextElementSibling;
+            if (input.value.trim() !== "") {
+                if (parseFloat(input.value) === correctAnswer) {
+                    feedback.innerHTML = '✔';
+                    feedback.className = 'correct';
+                    window.correctAnswers++;
                 } else {
-                    resultSpan.textContent = "❌";
-                    resultSpan.style.color = "red";
+                    feedback.innerHTML = '✖';
+                    feedback.className = 'incorrect';
                 }
-            });
-            let score = Math.round((correct / inputs.length) * 100);
-            document.getElementById("score").textContent = `נכון: ${correct} מתוך ${inputs.length} (ציון: ${score}%)`;
-            history.push(`ציון: ${score}% - ${correct}/${inputs.length}`);
-            updateHistory();
+                updateScore();
+            } else {
+                feedback.innerHTML = '';
+            }
         }
         
-        function updateHistory() {
-            const historyList = document.getElementById("history-list");
-            historyList.innerHTML = "";
-            history.forEach(record => {
-                let li = document.createElement("li");
-                li.textContent = record;
-                historyList.appendChild(li);
-            });
+        function updateScore() {
+            let scoreDiv = document.getElementById('score');
+            let percentage = (window.correctAnswers / window.totalQuestions) * 100;
+            scoreDiv.innerHTML = `נכונות: ${window.correctAnswers} מתוך ${window.totalQuestions} (ציון: ${percentage.toFixed(1)}%)`;
         }
         
-        generateExercises();
+        window.onload = generateExercises;
     </script>
 </body>
 </html>

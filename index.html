@@ -16,121 +16,132 @@
             color: #333;
             padding: 20px;
         }
-        .exercise {
-            font-size: 24px;
-            margin-bottom: 10px;
+        h1 {
+            text-align: center;
+            color: #007bff;
         }
-        input {
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .exercise {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .input-field {
+            width: 60px;
+            text-align: center;
             font-size: 18px;
             padding: 5px;
-            margin-left: 10px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
         }
         .result {
-            font-size: 24px;
+            font-size: 22px;
             margin-left: 10px;
         }
-        .button {
-            padding: 10px 20px;
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
             font-size: 18px;
-            background: #007bff;
             color: white;
+            background: #007bff;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
-            transition: 0.3s;
-            margin-top: 20px;
+            margin-top: 10px;
         }
-        .button:hover {
+        button:hover {
             background: #0056b3;
         }
-        .history {
+        #score {
+            font-weight: bold;
             margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background: #fff;
+            text-align: center;
+            font-size: 20px;
+        }
+        .exercise img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>תרגול מספרים מכוונים</h1>
-    <div id="exercises"></div>
-    <button class="button" onclick="generateExercises()">ניסיון חדש</button>
-    <p id="score"></p>
-    <div class="history" id="history"></div>
-    <footer>האתר נבנה על ידי אריק בוריסי ©️</footer>
+    <div class="container">
+        <h1>תרגול מספרים מכוונים</h1>
+        <div id="exercises"></div>
+        <button onclick="checkAnswers()">בדוק תשובות</button>
+        <button onclick="generateExercises()">ניסיון חדש</button>
+        <p id="score"></p>
+    </div>
 
     <script>
-        let history = [];
+        let correctAnswers = 0;
+        const operators = ['+', '-', '*', '/'];
 
         function generateExercises() {
-            const operators = ['+', '-', '*', '/'];
-            const exercisesDiv = document.getElementById('exercises');
-            exercisesDiv.innerHTML = '';
+            const exercisesContainer = document.getElementById("exercises");
+            exercisesContainer.innerHTML = "";
+            correctAnswers = 0;
 
             for (let i = 0; i < 10; i++) {
                 let num1 = Math.floor(Math.random() * 20) - 10;
                 let num2 = Math.floor(Math.random() * 20) - 10;
                 let operator = operators[Math.floor(Math.random() * operators.length)];
-                let question = `${formatNumber(num1)} ${operator} ${formatNumber(num2)}`;
-                let solution = eval(question.replace('÷', '/').replace('×', '*'));
-                exercisesDiv.innerHTML += `<div class='exercise'>
-                    <span> $begin:math:text$${question} =$end:math:text$ </span>
-                    <input type='number' data-answer='${solution}' oninput='checkAnswer(this)'>
-                    <span class='result'></span>
-                </div>`;
+                
+                if (operator === '/' && num2 === 0) num2 = 1; 
+
+                let formattedNum1 = num1 < 0 ? `(${num1})` : num1;
+                let formattedNum2 = num2 < 0 ? `(${num2})` : num2;
+                let correctAnswer = eval(`${num1} ${operator} ${num2}`);
+
+                let exerciseDiv = document.createElement("div");
+                exerciseDiv.className = "exercise";
+                exerciseDiv.innerHTML = `
+                    <img src="https://cdn-icons-png.flaticon.com/512/992/992651.png" alt="math">
+                    <span class="mathjax"> \$begin:math:text$${formattedNum1} ${operator} ${formattedNum2} =\\$end:math:text$ </span>
+                    <input type="text" class="input-field" data-answer="${correctAnswer}">
+                    <span class="result"></span>
+                `;
+
+                exercisesContainer.appendChild(exerciseDiv);
             }
             MathJax.typeset();
+            document.getElementById("score").textContent = "";
         }
 
-        function formatNumber(num) {
-            return num < 0 ? `${num}` : num; // לא נוסיף סוגריים אם המספר שלילי
-        }
+        function checkAnswers() {
+            let inputs = document.querySelectorAll(".input-field");
+            correctAnswers = 0;
 
-        function checkAnswer(input) {
-            let userAnswer = parseFloat(input.value);
-            let correctAnswer = parseFloat(input.dataset.answer);
-            let resultSpan = input.nextElementSibling;
-            
-            if (!isNaN(userAnswer)) {
-                if (userAnswer === correctAnswer) {
-                    resultSpan.innerHTML = '✔️';
-                    resultSpan.style.color = 'green';
-                } else {
-                    resultSpan.innerHTML = '❌';
-                    resultSpan.style.color = 'red';
-                }
-                calculateScore();
-            } else {
-                resultSpan.innerHTML = '';
-            }
-        }
-
-        function calculateScore() {
-            let inputs = document.querySelectorAll('input');
-            let correct = 0;
-            let total = inputs.length;
-            
             inputs.forEach(input => {
-                if (input.nextElementSibling.innerHTML === '✔️') {
-                    correct++;
+                let userAnswer = parseFloat(input.value);
+                let correctAnswer = parseFloat(input.dataset.answer);
+                let resultSpan = input.nextElementSibling;
+
+                if (userAnswer === correctAnswer) {
+                    resultSpan.textContent = "✔️";
+                    resultSpan.style.color = "green";
+                    correctAnswers++;
+                } else {
+                    resultSpan.textContent = "❌";
+                    resultSpan.style.color = "red";
                 }
             });
-            
-            let scoreText = `תוצאה: ${correct} מתוך ${total} ( ${Math.round((correct / total) * 100)}% )`;
-            document.getElementById('score').innerText = scoreText;
-            
-            if (correct === total) {
-                document.getElementById('score').style.color = 'green';
-            } else {
-                document.getElementById('score').style.color = 'red';
-            }
-            
-            history.push(scoreText);
-            updateHistory();
-        }
 
-        function updateHistory() {
-            let historyDiv = document.getElementById('history');
-            historyDiv.innerHTML = '<h3>היסטוריית תרגולים:</h3>' + history.map(score => `<p>${score}</p>`).join('');
+            let scorePercent = (correctAnswers / 10) * 100;
+            document.getElementById("score").textContent = `נכונות: ${correctAnswers} מתוך 10 (ציון: ${scorePercent}%)`;
         }
 
         generateExercises();

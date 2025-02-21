@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>תרגול מספרים מכוונים</title>
-    <script id="MathJax-script" async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         body {
@@ -91,25 +91,32 @@
             let correctCount = 0;
 
             for (let i = 0; i < total; i++) {
-                let num1 = Math.floor(Math.random() * 20) - 10;
-                let num2 = Math.floor(Math.random() * 20) - 10;
+                let num1 = Math.floor(Math.random() * 21) - 10;
+                let num2 = Math.floor(Math.random() * 21) - 10;
                 let operator = operators[Math.floor(Math.random() * operators.length)];
 
-                if (operator === '/' && num2 === 0) num2 = 1; 
+                if (operator === '/' && num2 === 0) num2 = 1;
 
-                let question = `${num1} ${operator} ${num2}`;
+                let formattedNum1 = formatNumber(num1);
+                let formattedNum2 = formatNumber(num2);
+
+                let question = `${formattedNum1} ${operator} ${formattedNum2}`;
                 let solution = eval(question.replace('÷', '/').replace('×', '*'));
 
                 let div = document.createElement('div');
                 div.className = 'exercise';
                 div.innerHTML = `
-                    <span class="mathjax"> \$begin:math:text$${num1} ${operator} ${num2} =\\$end:math:text$ </span>
+                    <span class="mathjax"> \$begin:math:text$${formattedNum1} ${operator} ${formattedNum2} =\\$end:math:text$ </span>
                     <input type="number" data-answer="${solution}" oninput="checkAnswer(this)">
                     <span class="result-indicator"></span>
                 `;
                 exercisesDiv.appendChild(div);
             }
             MathJax.typesetPromise();
+        }
+
+        function formatNumber(num) {
+            return num < 0 ? `(${num})` : num;
         }
 
         function checkAnswer(input) {

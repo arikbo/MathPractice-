@@ -15,7 +15,7 @@ function draw(type){
     const id=type+i,sub=type==='sub';
     const d=document.createElement('div');
     d.className='q';
-    const expression='('+signed(a)+') '+(sub?'−':'+') ('+signed(b)+')';
+    const expression='('+signed(a)+')'+(sub?' − ':' + ')+'('+signed(b)+')';
     d.innerHTML=
       '<div class="mathline"><bdi class="math" dir="ltr">'+expression+' = ?</bdi></div>'+
       (sub?'<label class="step-label" for="c'+id+'">שלב א׳ – כתבו את המספר הנגדי למספר השני:</label>'+
